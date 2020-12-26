@@ -119,6 +119,61 @@ require 的实现和上面这段代码类似，就不多赘述这一块了，理
 
 nodejs文档中给出了 require 加载的 [伪代码](https://nodejs.org/docs/latest/api/modules.html#modules_all_together)，为了便于查看，同时也理一下思路，我把伪代码转换成了脑图：
 
-![image-20201226134737488](imgs/image-20201226134737488.png)
+![image-20201226153328814](imgs/image-20201226153328814.png)
 
-截图看不清楚，脑图的文件放在了我的github中，需要的朋友自取。
+截图看不清楚，脑图的文件放在了[我的Github](https://github.com/bing321/blog/blob/main/nodejs/source/require_module.xmind)中（我画的可能有纰漏，欢迎指正），需要的朋友自取。
+
+上面的脑图比较翔实的描述了`require`的加载逻辑，下面把常用的`require`方式总结一下。
+
+#### case1：不带任何符号的模块
+
+下面标的序号，都是上一步没有找到文件的情况下，继续寻找的步骤。
+
+```
+require("http")  // 不带任何符号的文件名
+require("mycustom.js")  // 不带任何符号的文件名
+```
+
+1. 优先从 node 内置模块中查找
+2. 内置模块没有，就从当前目录的 node_modules 中找
+3. 从父目录中找，一直找到文件系统根目录（找到 `/node_modules/mycustom.js`）为止
+
+#### case2：带`/`，`./`，`../`等符号
+
+```
+require("./custom")
+```
+
+1. 先找名为 `custom` 的文件
+
+2. 再找 `custom.js`文件
+
+3. 再找`custom.json`文件
+
+4. 最后找`custom.node`文件
+
+5. 找`custom/package.json`文件，再找其中 main 模块中指定的文件
+
+   ```
+   {
+   	"name" : "some-library",
+   	"main" : "./lib/some-library.js"
+   }
+   ```
+
+6. 找`custom/index.js`文件
+
+7. 找`custom/index.json`文件
+
+8. 找`custom/index.node`文件
+
+## 结语
+
+文章写道这里，我长舒一口气，总算把主要部分理完了，我也对node的模块系统有了新的认识，算是小有收获。
+
+其他的内容，如 require.cache，require 的循环引用，以及其他的属性及注意点，本文就不再赘述了，遇到问题再查[文档](https://nodejs.org/en/)吧！因为我实在想不出 require.cache 和 循环引用的使用场景是什么（也因为整理上面的内容花了太多精力），就不再花费精力去整理了（逃。
+
+以上就是本文的全部内容，如果文章对你有所帮助，我感到非常荣幸！也欢迎指出本文中的纰漏！
+
+写文不易，转载请注明出处。
+
